@@ -20,13 +20,12 @@ It is for people with a side gig and a US tax return (Schedule C, Form 8829, For
 You need a Claude plan that includes skills, connectors and scheduled tasks. Runs count toward your plan's usage limits.
 
 1. **Add the skill.** Download this repository and run `tools/package_skill.sh`, which builds `dist/sort-tax-receipts.zip` from the [`skills/sort-tax-receipts`](skills/sort-tax-receipts) folder. In Claude, open Settings > Capabilities, turn on code execution and file creation, and upload the zip under Skills.
-2. **Connect Google.** Turn on the Google Drive connector, and Gmail if you want emailed receipts.
-3. **Create the sheet.** Say "set up my tax sheet". Claude creates a folder in your Drive with the sheet and a text file holding the bridge script, and gives you the link. If Claude cannot upload the sheet, do it by hand: upload [`templates/tax-receipt-sorter-template.xlsx`](templates/tax-receipt-sorter-template.xlsx) to Google Drive, open it, and choose File > Save as Google Sheets.
-4. **Fill in `My situation`.** Set the tax year and answer what you can. Blank answers are fine: Claude will ask. See [`templates/situation.example.md`](templates/situation.example.md) for a filled-in example.
-5. **Add the sheet bridge.** Claude can read and move Drive files but cannot type into a Google Sheet. In your sheet, open Extensions > Apps Script, paste in the text file Claude made (the same as [`apps-script/Code.gs`](apps-script/Code.gs)), save, choose `setup` and press Run. Google asks you to allow the script to edit this spreadsheet and use your Drive; it runs as you, inside your own account. After you allow it, press Run again if nothing shows in the log under the code. `setup` creates a `Receipts inbox` folder next to the sheet, and from then on the script copies Claude's rows into the sheet once an hour.
-6. **Try it.** Upload the files in [`sample-receipts/`](sample-receipts) to `Receipts inbox` and say:
+2. **Connect Google.** Turn on the Google Drive and Google Sheets connectors, and Gmail if you want emailed receipts. Drive reads and files the receipts; Sheets lets Claude write the rows.
+3. **Create the sheet.** Say "set up my tax sheet". Claude creates a folder in your Drive holding the sheet and a `Receipts inbox` folder, and gives you both links. If Claude cannot upload the sheet, do it by hand: upload [`templates/tax-receipt-sorter-template.xlsx`](templates/tax-receipt-sorter-template.xlsx) to Google Drive, open it, choose File > Save as Google Sheets, and paste the link to a receipts folder into `My situation`.
+4. **Fill in `My situation`.** Answer what you can. Blank answers are fine: Claude will ask. See [`templates/situation.example.md`](templates/situation.example.md) for a filled-in example.
+5. **Try it.** Upload the files in [`sample-receipts/`](sample-receipts) to `Receipts inbox`, wait a minute or two, and say:
    > Sort my receipts into this sheet: (your sheet link)
-7. **Schedule it.** Create a weekly scheduled task with the same sentence as the prompt. A scheduled run puts its questions in the sheet; answer them there, or approve the row, before the next run.
+6. **Schedule it.** Create a weekly scheduled task with the same sentence as the prompt. A scheduled run puts its questions in the sheet; answer them there, or approve the row, before the next run.
 
 When you are done trying it, delete the sample rows and files.
 
@@ -64,6 +63,10 @@ Some things it never does:
 
 A row counts when its date is in your tax year and its `Status` is `Approved`. Rows you type in by hand, with no `Status`, count too. The form line numbers follow recent versions of the forms; check them against this year's forms before you file.
 
+## If Claude cannot edit your sheet
+
+The Google Sheets connector edits the sheet from a chat you start yourself. If a scheduled run reports that it could not write to the sheet, or you run Claude somewhere without that connector, install the optional bridge: in your sheet, open Extensions > Apps Script, paste in [`apps-script/Code.gs`](apps-script/Code.gs), save, choose `setup` and press Run (press it again if nothing shows in the log after you allow it). The script runs as you, inside your own Google account. Once an hour it copies the rows Claude left in a `_claude` folder into the sheet, and writes a text copy of the sheet there for Claude to read.
+
 ## How it differs
 
 - **From a bookkeeping app:** the rules are yours, in plain words, in a sheet you own. Nothing is stored anywhere else.
@@ -72,19 +75,19 @@ A row counts when its date is in your tax year and its `Status` is `Approved`. R
 
 ## Privacy
 
-Everything runs inside your own Claude account with your own connectors. This project has no server and never sees your files, your sheet or your credentials. The sheet bridge is a script you paste into your own sheet; it runs under your Google account and talks only to that sheet and your Drive. The skill is told not to copy card, bank or tax ID numbers into the sheet.
+Everything runs inside your own Claude account with your own connectors. This project has no server and never sees your files, your sheet or your credentials. The skill is told not to copy card, bank or tax ID numbers into the sheet.
 
 ## Repository
 
 ```
-skills/sort-tax-receipts/   the skill, its reference files, and copies of the template and script
+skills/sort-tax-receipts/   the skill, its reference files, and a copy of the template
 templates/                  sheet template and an example of filled-in rules
 sample-receipts/            ten invented receipts, each stamped SAMPLE
-apps-script/                the script that copies Claude's rows into the sheet
+apps-script/                optional bridge for when Claude cannot edit the sheet
 tools/                      scripts that build the template, the samples and the skill zip
 ```
 
-To rebuild the template or the samples: `pip install openpyxl reportlab`, then run the scripts in `tools/`. After changing the template or `apps-script/Code.gs`, run `tools/sync_skill_assets.sh` to copy them into the skill.
+To rebuild the template or the samples: `pip install openpyxl reportlab`, then run the scripts in `tools/`. After changing the template, run `tools/sync_skill_assets.sh` to copy it into the skill.
 
 ## Licence
 

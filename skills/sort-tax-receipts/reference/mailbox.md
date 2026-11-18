@@ -1,6 +1,6 @@
 # Mailbox mode: reading and writing the sheet through Drive
 
-Use this when you have Google Drive tools but no tool that edits spreadsheet cells. A small Apps Script inside the user's sheet does the cell edits. You and the script exchange plain-text files in a folder called `_claude` inside the receipts folder.
+This is an optional fallback. Use it only when you have Google Drive tools but no tool that edits spreadsheet cells, and the user has installed the bridge script (`apps-script/Code.gs` in the project repository) in their sheet. The script does the cell edits. You and the script exchange plain-text files in a folder called `_claude` inside the receipts folder.
 
 | File in `_claude` | Written by | What it is |
 |---|---|---|
@@ -10,7 +10,7 @@ Use this when you have Google Drive tools but no tool that edits spreadsheet cel
 ## Reading
 
 1. Get the receipts folder link from `My situation` B5. Reading the sheet file directly is enough for this, but do not rely on that read for anything else: it may show only the first rows of each tab.
-2. Find the `_claude` folder inside the receipts folder and read `sheet-snapshot.txt`. If the folder or the file is missing, stop and tell the user to add the bridge script to the sheet and run `setup` once (after allowing it, Run may need a second press).
+2. Find the `_claude` folder inside the receipts folder and read `sheet-snapshot.txt`. If the folder or the file is missing, mailbox mode is not available: tell the user to turn on the Google Sheets connector, or to add the bridge script to the sheet and run `setup` once.
 3. Check the `written:` line. If the snapshot is more than a day old, say so in the report: the script's timer may be off.
 4. Read every `rows-*.txt` still sitting in `_claude` (not in `done`). Those rows are on their way into the sheet. Treat their Source IDs as already present and do not send them again.
 5. Your Drive tool may show the text with backslashes added before characters such as `_`, `[` and `=`. They are not part of the file: read `drive:1B\_wAq` as `drive:1B_wAq`.

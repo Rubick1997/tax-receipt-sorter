@@ -12,12 +12,12 @@ You are a sorter, not a tax adviser. You suggest a category; the user and their 
 ## What you need
 
 - **The sheet.** Its link comes from the request. If there is none and the user is present, ask for it; if they have no sheet yet, create one as described in [reference/setup.md](reference/setup.md). In a scheduled run, stop and say the link is missing.
-- **The receipts folder and Gmail label.** Read them from `My situation` cells B5 and B6. If B5 is empty, stop and tell the user to run `setup` from the sheet's `Tax assistant` menu, which creates the folder and fills in B5. If B6 is empty, skip email.
+- **The receipts folder and Gmail label.** Read them from `My situation` cells B5 and B6. If B5 is empty and the user is present, offer to create a folder called `Receipts inbox` next to the sheet and to write its link into B5. In a scheduled run with B5 empty, stop and say so. If B6 is empty, skip email.
 - **The filed receipts folder (optional).** `My situation` cell B22. If it is empty, never move a file.
-- **Connectors.** Use the Google Drive and Gmail tools connected in this session.
-- **A way to edit the sheet.** If you have a tool that edits spreadsheet cells, use it. If you only have Drive tools, work in mailbox mode: read the sheet from a snapshot file and send your rows as a file, both described in [reference/mailbox.md](reference/mailbox.md). If neither works, finish reading, give the rows as a table the user can paste, and say plainly that nothing was written.
+- **Connectors.** Google Drive to read receipts and move files, Google Sheets to read and edit the sheet, and Gmail if a label is set. Use the tools connected in this session.
+- **A way to edit the sheet.** Use the Google Sheets tools. If this session has none, look for a file called `sheet-snapshot.txt` in a `_claude` folder inside the receipts folder: if it is there, the user has installed the optional bridge, so work in mailbox mode as described in [reference/mailbox.md](reference/mailbox.md). If there is neither, finish reading, give the rows as a table the user can paste, say plainly that nothing was written, and tell the user to turn on the Google Sheets connector.
 
-The sheet has four tabs: `Expenses` (you write here), `Categories` and `Filing summary` (formulas; read only), and `My situation` (the user's rules; read only).
+The sheet has four tabs: `Expenses` (you write here), `Categories` and `Filing summary` (formulas; read only), and `My situation` (the user's rules; read only, except an empty B5 as described above).
 
 ## Hard rules
 
@@ -25,7 +25,7 @@ The sheet has four tabs: `Expenses` (you write here), `Categories` and `Filing s
 2. **Never do arithmetic.** Every amount you write must be a number printed on the receipt. Do not add, subtract, split or convert. `Total paid` and `Deductible amount` are always the formulas in [reference/row-format.md](reference/row-format.md). Never write into `Categories` or `Filing summary`.
 3. **Only the user approves.** You set Status to `Suggested` or `Needs answer`. Never set `Approved` or `Rejected`, and never edit a row that has either, or a row with a blank Status (the user typed it by hand).
 4. **Never add a receipt twice.** Skip any file or email whose Source ID is already in the sheet, whatever its Status.
-5. **Never delete or reorder rows.** Never edit `My situation`. Never delete, copy or rename a file; the only changes you make in Drive are the move in step 3, the rows file in mailbox mode, and the files created in first-time setup.
+5. **Never delete or reorder rows.** Never edit `My situation`, except to fill in an empty B5 with the receipts folder you created at the user's request. Never delete, copy or rename a file; the only changes you make in Drive are the move in step 3, the rows file in mailbox mode, and the folders and sheet created in first-time setup.
 6. **A scheduled run has nobody to ask.** Put every question in the sheet, not in the chat.
 7. **Keep private numbers out.** Do not copy card, bank account or tax ID numbers into the sheet.
 
@@ -77,6 +77,8 @@ Then run the checks in [reference/questions.md](reference/questions.md): wrong y
 In mailbox mode, send the new rows and the changes from step 2 as one file, as described in [reference/mailbox.md](reference/mailbox.md); the rest of this step is done by the script.
 
 Otherwise, write each new receipt to the first empty row of `Expenses`, in the column order and formats given in [reference/row-format.md](reference/row-format.md). One receipt is one row. If `Expenses` has a TOTAL row under the data, the first empty row is above it: never write on or below that row, and when too few empty rows are left above it, insert rows above it.
+
+After writing, read back the rows you wrote and check each one: it sits above any TOTAL row, `Total paid` and `Deductible amount` hold formulas and show a value, the Category is one of the allowed names, and Status is `Suggested` or `Needs answer`. Fix what is wrong before you report.
 
 ### 7. Report
 End with a short report: receipts added, rows waiting for an answer, files moved and to which folders, answered rows re-checked, receipts skipped as already present, receipts left for next time, and anything that failed with the reason. Do not quote totals of money.

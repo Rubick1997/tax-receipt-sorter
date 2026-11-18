@@ -1,8 +1,9 @@
 /**
- * Tax Receipt Sorter: sheet bridge.
+ * Tax Receipt Sorter: sheet bridge (optional).
  *
- * Claude can read and create files in Google Drive, but it cannot edit a
- * Google Sheet. This script is the bridge. On a timer it:
+ * You only need this if Claude has no Google Sheets connector where you run
+ * it, so it can read and create files in Google Drive but cannot edit the
+ * sheet. This script is the bridge. On a timer it:
  *   1. reads the "rows-*.txt" files Claude left in the mailbox folder and
  *      applies them to the Expenses tab, then
  *   2. writes "sheet-snapshot.txt" there, so Claude can see the whole sheet.
