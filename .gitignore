@@ -1,0 +1,11 @@
+.DS_Store
+__pycache__/
+.venv/
+venv/
+~$*.xlsx
+
+# Never commit real receipts or a real sheet export
+receipts/
+private/
+dist/
+*.zip
